@@ -136,7 +136,7 @@ export default function TraceGraph({ trace }: { trace: Trace }) {
             ) : null}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
