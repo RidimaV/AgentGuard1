@@ -7,7 +7,7 @@ export interface IToolSchema {
   inputSchema: Record<string, any>;
   outputSchema: Record<string, any>;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  sideEffectLevel: 'NONE' | 'REVERSIBLE' | 'DESTRUCTIVE';
+  sideEffectLevel: 'NONE' | 'READ_ONLY' | 'STATE_CHANGE' | 'EXTERNAL' | 'DESTRUCTIVE';
   requiresConfirmation: boolean;
   reversible: boolean;
   mockSuccessResponse?: any;
@@ -75,6 +75,9 @@ export interface IAgent extends Document {
   integration?: IAgentIntegration;
   connectionStatus?: ConnectionStatus;
   lastHealthCheck?: Date;
+  activeBatchId?: string;
+  scenarioGenerationStatus?: 'NOT_GENERATED' | 'GENERATING' | 'READY' | 'FAILED';
+  scenarioCount?: number;
 }
 
 const ToolSchemaDefinition = new Schema({
@@ -83,7 +86,7 @@ const ToolSchemaDefinition = new Schema({
   inputSchema: { type: Schema.Types.Mixed, default: {} },
   outputSchema: { type: Schema.Types.Mixed, default: {} },
   riskLevel: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'LOW' },
-  sideEffectLevel: { type: String, enum: ['NONE', 'REVERSIBLE', 'DESTRUCTIVE'], default: 'NONE' },
+  sideEffectLevel: { type: String, enum: ['NONE', 'READ_ONLY', 'STATE_CHANGE', 'EXTERNAL', 'DESTRUCTIVE'], default: 'NONE' },
   requiresConfirmation: { type: Boolean, default: false },
   reversible: { type: Boolean, default: true },
   mockSuccessResponse: { type: Schema.Types.Mixed }
@@ -153,6 +156,13 @@ const AgentSchema: Schema = new Schema({
     enum: ['CONNECTED', 'DEGRADED', 'AUTH_FAILED', 'UNREACHABLE', 'TELEMETRY_DISCONNECTED', 'INVALID_CONFIG', 'DISABLED'],
   },
   lastHealthCheck: { type: Date },
+  activeBatchId: { type: String },
+  scenarioGenerationStatus: {
+    type: String,
+    enum: ['NOT_GENERATED', 'GENERATING', 'READY', 'FAILED'],
+    default: 'NOT_GENERATED'
+  },
+  scenarioCount: { type: Number, default: 0 },
 });
 
 export const Agent = mongoose.model<IAgent>('Agent', AgentSchema);

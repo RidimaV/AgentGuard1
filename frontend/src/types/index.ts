@@ -1,6 +1,6 @@
 export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type TestStatus = 'PASSED' | 'FAILED' | 'SKIPPED';
-export type RunStatus = 'COMPLETED' | 'RUNNING' | 'FAILED' | 'PENDING';
+export type RunStatus = 'COMPLETED' | 'RUNNING' | 'FAILED' | 'PENDING' | 'PARTIAL';
 
 export type IntegrationType = 'INTERNAL' | 'HTTP' | 'OPENAI_COMPATIBLE' | 'WEBHOOK' | 'SDK';
 export type VisibilityMode = 'BLACK_BOX' | 'INSTRUMENTED';
@@ -56,6 +56,8 @@ export interface AttackSurface {
     sideEffect: string;
     reversible: boolean;
     requiresConfirmation: boolean;
+    applicablePolicies?: string[];
+    testCategories?: string[];
   }>;
 }
 
@@ -105,6 +107,9 @@ export interface Agent {
   integration?: AgentIntegration;
   connectionStatus?: ConnectionStatus;
   lastHealthCheck?: string;
+  activeBatchId?: string;
+  scenarioGenerationStatus?: 'NOT_GENERATED' | 'GENERATING' | 'READY' | 'FAILED';
+  scenarioCount?: number;
 }
 
 export interface QualityGateConfig {
@@ -245,6 +250,10 @@ export interface Evaluation {
   recommendations?: Recommendation[];
   report?: Record<string, any>;
   scenarioIds?: string[];
+  scenarioSnapshot?: Array<Record<string, any>>;
+  errorMessage?: string;
+  completedScenarios?: number;
+  totalScenarios?: number;
   isAdaptive?: boolean;
 }
 
@@ -293,6 +302,7 @@ export interface ComparisonMetric {
   name: string;
   old: number;
   new: number;
+  delta: number;
 }
 
 export interface ComparisonResult {
@@ -302,18 +312,15 @@ export interface ComparisonResult {
   evalIdB: string;
   metrics: ComparisonMetric[];
   reliabilityDelta: number;
-  safetyDelta: number;
-  criticalA: number;
-  criticalB: number;
-  failedA: number;
-  failedB: number;
-  passedA: number;
-  passedB: number;
-  totalA: number;
-  totalB: number;
-  regressionDetected: boolean;
-  improvements: string[];
-  regressions: string[];
+  criticalDelta: number;
+  status: 'READY' | 'BLOCKED';
+  regressionDetected?: boolean;
+  failures: {
+    new: Failure[];
+    resolved: Failure[];
+    persisting: Failure[];
+  };
+  warnings: string[];
 }
 
 export interface TestSuite {
